@@ -1,41 +1,197 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>React Sports Game</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>React Sports Game</title>
+  <link rel="stylesheet" href="style.css ">
 </head>
+
 <body>
-    <!-- include an element for ReactDOM to attach our React-generated elements to -->
-    <div id="root"></div>
+  <!-- include an element for ReactDOM to attach our React-generated elements to -->
+  <div id="root"></div>
 
-    <!-- include React and ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
-    <!-- include Babel standalone so we can process JSX in React.createElement stuff -->
-    <script crossorigin src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+  <!-- include React and ReactDOM -->
+  <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+  <!-- include Babel standalone so we can process JSX in React.createElement stuff -->
+  <script crossorigin src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
 
-    <!-- include our JS+JSX for the React Appliccation -->
-<script type="text/babel">
+  <!-- include our JS+JSX for the React Appliccation -->
+  <script type="text/babel">
 
-// An App component under which all other components will be added
-function App (props) {
-  return (
-    <div>
-      <h1>Welcome to the Sports Game starter!</h1>
-      <em>This file represents the way your code should look after completing the <strong>Setup</strong steps in the instructions.</em>
-    </div>
-  )
-}
+    function Team(props) {
+
+      let shotPercentageDiv
+
+      if (props.stats.shots) {
+        const shotPercentage = Math.round((props.stats.score / props.stats.shots) * 100)
+        shotPercentageDiv = (
+          <div>
+            <strong>Shoting %: {shotPercentage}</strong>
+          </div>
+        )
+      }
+
+
+      return (
+        <div className='Team'>
+          <h2>{props.name}</h2>
+
+          <div className='identity'>
+            <img src={props.logo} alt={props.name} />
+          </div>
+
+          <div>
+            <strong>Shots:</strong> {props.stats.shots}
+          </div>
+
+          <div>
+            <strong>Score:</strong> {props.stats.score}
+          </div>
+
+          {shotPercentageDiv}
+
+          <button onClick={props.shotHandler}>Shoot!</button>
+        </div>
+      )
+    }
+
+
+    class Game extends React.Component {
+      constructor(props) {
+        super(props)
+
+        this.state = {
+          resetCount: 0,
+          homeTeamStats: {
+            shots: 0,
+            score: 0
+          },
+          visitingTeamStats: {
+            shots: 0,
+            score: 0
+          }
+        }
+        this.shotSound = new Audio('./assets/Hit2.mp3')
+        this.scoreScound = new Audio('./assets/Score2.mp3')
+      }
+
+      shoot = (team) => {
+        const teamStatsKey = `${team}TeamStats`
+        let score = this.state[teamStatsKey].score
+        this.shotSound.play()
+
+        if (Math.random() > 0.5) {
+          score += 1
+
+          setTimeout(() => {
+            this.scoreScound.play()
+          }, 100)
+        }
+
+        this.setState((state, props) => ({
+          [teamStatsKey]: {
+            shots: state[teamStatsKey].shots + 1,
+            score
+          }
+        }))
+      }
+
+      resetGame = () => {
+        this.setState((state, props) => ({
+          resetCount: state.resetCount + 1,
+          homeTeamStats: {
+            shots: 0,
+            score: 0
+          },
+          visitingTeamStats: {
+            shots: 0,
+            score: 0
+          }
+        }))
+      }
+
+      render() {
+        return (
+          <div className='Game'>
+            <h1>Welcome to {this.props.venue}</h1>
+            <div className='stats'>
+              <Team
+                name={this.props.visitingTeam.name}
+                logo={this.props.visitingTeam.logoSrc}
+                stats={this.state.visitingTeamStats}
+                shotHandler={() => this.shoot('visiting')}
+              />
+
+              <div className='versus'>
+                <h1>VS</h1>
+                <div>
+                <strong>Resets:</strong> {this.state.resetCount}
+                <button onClick={this.resetGame}>Reset Game</button>
+                </div>
+              </div>
+
+              <Team
+                name={this.props.homeTeam.name}
+                logo={this.props.homeTeam.logoSrc}
+                stats={this.state.homeTeamStats}
+                shotHandler={() => this.shoot('home')}
+              />
+            </div>
+          </div>
+        )
+      }
+    }
+
+    function App(props) {
+      const troopers = {
+        name: 'Death Star Troopers',
+        logoSrc: 'https://i.pinimg.com/236x/94/7e/b5/947eb5c94e42fa10b02b56cbb4505d24--star-troopers-golden-state-warriors.jpg'
+      }
+
+      const force = {
+        name: 'Dagobah Swamp Force',
+        logoSrc: 'https://i.pinimg.com/236x/68/ab/fc/68abfcb7439fb7dad6af60ab6b802f3b--star-wars-logos-star-wars-art.jpg'
+      }
+
+      const emperors = {
+        name: 'Darkside Emperors',
+        logoSrc: 'https://i.pinimg.com/236x/ff/07/69/ff0769980fcfce821366aca69fd22e8a--sport-logos-logo-ideas.jpg'
+      }
+
+      const rebels = {
+        name: 'Republic Rebels',
+        logoSrc: 'https://i.pinimg.com/236x/5c/2b/00/5c2b006f9c2677c7f5727d7424c8f95a--sports-logos-star-wars-rebels.jpg'
+      }
+
+      return (
+        <div className='App'>
+          <Game
+            venue='Gauntlets Fighter'
+            homeTeam={troopers}
+            visitingTeam={force}
+          />
+          <Game
+            venue='Naboos Royal Starship'
+            homeTeam={emperors}
+            visitingTeam={rebels}
+          />
+
+        </div>
+      )
+    }
 
 
 
-// Render the App
-ReactDOM.render(
-  <App />,
-  document.getElementById('root')
-)
-</script>
+    // Render the App
+    ReactDOM.render(
+      <App />,
+      document.getElementById('root')
+    )
+  </script>
 </body>
+
 </html>
